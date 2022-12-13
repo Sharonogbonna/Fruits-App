@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 const port = 3000
 const mongoose = require('mongoose');
+const methodOverride = require('method-override')
 
 const Fruit = require('./models/fruit.js')
 // Set up middleware
@@ -13,6 +14,7 @@ app.use((req, res, next) => {
 })
 
 app.use(express.urlencoded({extended:false}))
+app.use(methodOverride('_method'))
 
 app.set('view engine', 'jsx')
 app.engine('jsx', require('express-react-views').createEngine())
@@ -39,9 +41,23 @@ app.get('/fruits/new', (req,res) =>{
     res.render('New')
 })
 // Delete - Delete this one record
-
+app.delete('/fruits/:id', (req, res)=>{
+    Fruit.findByIdAndRemove(req.params.id, (err, data)=>{
+        res.redirect('/fruits');//redirect back to fruits index
+    });
+});
 // Update - Modifying a record
-
+app.put('/fruits/:id', (req, res)=>{
+    if(req.body.readyToEat === 'on'){
+        req.body.readyToEat = true;
+    } else {
+        req.body.readyToEat = false;
+    }
+    Fruit.findByIdAndUpdate(req.params.id, req.body, (err, updatedFruit)=>{
+       console.log(updatedFruit)
+        res.redirect(`/fruits/${req.params.id}`);
+    });
+});
 // Create - send the filled form to db and create a new record
 app.post('/fruits', (req,res) => {
     if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
@@ -56,7 +72,20 @@ app.post('/fruits', (req,res) => {
     
 })
 // Edit - Get the form with the record to update
-
+app.get('/fruits/:id/edit', (req, res)=>{
+    Fruit.findById(req.params.id, (err, foundFruit)=>{ //find the fruit
+      if(!err){
+        res.render(
+    		  'Edit',
+    		{
+    			fruit: foundFruit //pass in the found fruit so we can prefill the form
+    		}
+    	);
+    } else {
+      res.send({ msg: err.message })
+    }
+    });
+});
 // Show route - Show me a particular record
 app.get("/fruits/:indexOfFruitsArray", function (req, res) {
   Fruit.findById(req.params.indexOfFruitsArray, (err, foundFruit) => {
@@ -67,4 +96,4 @@ app.get("/fruits/:indexOfFruitsArray", function (req, res) {
 });
 app.listen(port, () => {
     console.log('listening')
-})
+}) 

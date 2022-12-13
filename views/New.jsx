@@ -12,9 +12,11 @@ class New extends React.Component {
               Is Ready To Eat: <input type="checkbox" name="readyToEat" /><br/>
               <input type="submit" name="" value="Create Fruit"/>
             </form>
+            <br />
+            <a href={`/fruits`}>Return to Index</a>
         </div>);
     }
   }
 
 
-module.exports = New;
+module.exports = New; 
